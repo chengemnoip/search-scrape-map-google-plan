@@ -1,139 +1,173 @@
 # Search, Scrape, Map MCP Server (TypeScript)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- 假設使用 MIT 授權 -->
+[繁體中文](README_zhTW.md) | **English**
 
-一個符合 Model Context Protocol (MCP) 規範的 TypeScript 伺服器，提供網路搜尋、網頁抓取和 Sitemap 解析工具，旨在與支援 MCP 的 AI 助理 (如 Roo Code) 無縫整合。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Assuming MIT License -->
 
-**版本:** 1.0.0
-**GitHub 倉庫:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
-**原始計畫文件:** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
+A TypeScript server compliant with the Model Context Protocol (MCP), providing web search, web scraping, and Sitemap parsing tools, designed for seamless integration with MCP-enabled AI assistants like Roo Code.
+
+**Version:** 1.0.0
+**GitHub Repository:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
+**Original Plan Document (Chinese):** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
 
 ---
 
-## 🚀 功能特色 (Features)
+## 🚀 Features
 
-本 MCP 伺服器提供以下核心工具：
+This MCP server offers the following core tools:
 
-*   **網路搜尋 (`search`)**: 透過整合 Google Custom Search JSON API，提供強大的網路搜尋能力。支援指定結果數量和分頁。
-*   **網頁抓取 (`scrape`)**: 利用 Playwright (Chromium 核心) 抓取指定 URL 的網頁內容。能夠處理 JavaScript 動態渲染的頁面，並可選擇性地抓取特定 CSS 選擇器對應的元素內容，或等待特定元素載入完成。
-*   **Sitemap 解析 (`map`)**: 自動下載並解析 `sitemap.xml` 或 Sitemap Index 文件，快速提取其中包含的所有 URL 列表 (註：目前僅處理索引文件的第一層)。
+*   **Web Search (`search`)**: Leverages the Google Custom Search JSON API for powerful web searching capabilities. Supports specifying the number of results and pagination.
+*   **Web Scraping (`scrape`)**: Uses Playwright (Chromium core) to scrape web content from a given URL. Capable of handling dynamically rendered pages via JavaScript, optionally scraping content from specific CSS selectors, or waiting for specific elements to load.
+*   **Sitemap Parsing (`map`)**: Automatically downloads and parses `sitemap.xml` or Sitemap Index files, quickly extracting the list of URLs contained within (Note: Currently only processes the first level of index files).
 
-## 🛠️ 技術棧 (Tech Stack)
+## 🛠️ Tech Stack
 
-*   **語言:** TypeScript 5.x
-*   **運行環境:** Node.js (^18.0 || ^20.0)
+*   **Language:** TypeScript 5.x
+*   **Runtime:** Node.js (^18.0 || ^20.0)
 *   **MCP SDK:** `@modelcontextprotocol/sdk`
-*   **核心依賴:**
-    *   `search`: `axios` (HTTP 請求)
-    *   `scrape`: `playwright` (瀏覽器自動化)
-    *   `map`: `axios` (HTTP 請求), `fast-xml-parser` (XML 解析)
-*   **Schema 驗證:** `zod`
-*   **開發與建置:** `pnpm`, `tsx`, `typescript`, `dotenv`
-*   **程式碼品質:** `eslint`, `prettier`
-*   **測試:** `jest`, `ts-jest` (目前尚未編寫測試案例)
+*   **Core Dependencies:**
+    *   `search`: `axios` (HTTP requests)
+    *   `scrape`: `playwright` (Browser automation)
+    *   `map`: `axios` (HTTP requests), `fast-xml-parser` (XML parsing)
+*   **Schema Validation:** `zod`
+*   **Development & Build:** `pnpm`, `tsx`, `typescript`, `dotenv`
+*   **Code Quality:** `eslint`, `prettier`
+*   **Testing:** `jest`, `ts-jest` (Test cases not yet implemented)
 
-## ⚙️ 安裝與設定 (Installation & Setup)
+## ⚙️ Installation & Setup
 
-### 前置條件 (Prerequisites)
+### Prerequisites
 
-*   **Node.js:** 建議使用 LTS 版本 18 或 20。
-*   **pnpm:** 推薦使用 pnpm 作為套件管理器 (`npm install -g pnpm`)。當然，您也可以使用 npm 或 yarn。
-*   **Git:** 用於版本控制。
-*   **Google API Key & CX ID:** `search` 工具需要 Google Custom Search API 的憑證。
+*   **Node.js:** LTS versions 18 or 20 are recommended.
+*   **pnpm:** Recommended package manager (`npm install -g pnpm`). Alternatively, npm or yarn can be used.
+*   **Git:** For version control.
+*   **Google API Key & CX ID:** Required for the `search` tool to function, obtained from Google Cloud Console and Programmable Search Engine setup.
 
-### 安裝步驟 (Installation Steps)
+### Installation Steps
 
-1.  **Clone 倉庫:**
+1.  **Clone the Repository:**
     ```bash
     git clone https://github.com/chengemnoip/search-scrape-map-google-plan.git
-    cd search-scrape-map-google-plan
+    # Replace 'search-scrape-map-google-plan' with your actual local directory name if different
+    cd your-local-project-directory-name 
     ```
-    (請將上面的 `search-scrape-map-google-plan` 替換為您實際的本地目錄名稱 `search_mcp_server_TypeScript_plan@250504`)
+    (e.g., `cd search_mcp_server_TypeScript_plan@250504`)
 
-2.  **安裝依賴:**
+2.  **Install Dependencies:**
     ```bash
     pnpm install
     ```
-    *   此命令會安裝所有必要的套件，並自動下載 Playwright 所需的 Chromium 瀏覽器。如果瀏覽器下載失敗或需要其他瀏覽器核心，請參考 Playwright 文件執行 `pnpm exec playwright install --with-deps <browser_name>`。
+    *   This command installs all necessary packages and automatically downloads the Chromium browser required by Playwright. If the browser download fails or you need a different browser core, refer to the Playwright documentation and run `pnpm exec playwright install --with-deps <browser_name>`.
 
-### 環境變數設定 (Environment Variables)
+### Environment Variables Setup
 
-`search` 工具需要 Google API 金鑰和自訂搜尋引擎 ID。您可以透過以下任一方式設定 (推薦方式 1)：
+The `search` tool requires a Google API Key and a Custom Search Engine ID (CX ID). Configure these credentials using one of the following methods (Method 1 is recommended):
 
-**方式 1: 在 Roo Code MCP 設定中配置 (推薦)**
+**Method 1: Configure in Roo Code MCP Settings (Recommended)**
 
-此方式最為推薦，因為可以集中管理且不需在專案目錄存放敏感資訊。
+This is the preferred method for centralized management and keeping sensitive information out of the project directory.
 
-1.  開啟 Roo Code (或 VS Code) 的 MCP 設定檔。路徑通常類似：
-    *   Windows: `C:\Users\<您的使用者名稱>\AppData\Roaming\Code\User\globalStorage\rooveterinaryinc.roo-cline\settings\mcp_settings.json`
+1.  Open the MCP settings file in Roo Code (or VS Code). The path is typically:
+    *   Windows: `C:\Users\<YourUsername>\AppData\Roaming\Code\User\globalStorage\rooveterinaryinc.roo-cline\settings\mcp_settings.json`
     *   macOS: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
     *   Linux: `~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
-2.  找到 `"search-scrape-map-ts-plan"` 這個伺服器的配置區塊。
-3.  在其 `env` 物件中填入您的金鑰和 ID：
+2.  Locate the configuration block for this server (identified by the key you set, e.g., `"search-scrape-map-ts-plan"`).
+3.  Add your credentials to the `env` object within that block:
+
     ```json
-      "env": {
-        "GOOGLE_API_KEY": "在此填入您的 Google API Key",
-        "GOOGLE_CX_ID": "在此填入您的 Google CX ID"
-      },
+    // Example snippet to add/modify within mcp_settings.json -> mcpServers
+        "search-scrape-map-ts-plan": { // Or your custom key name
+          "name": "Search/Scrape/Map Server (TS Plan)", // Display name in Roo Code
+          "description": "Provides search, scrape, and map tools via Google/Playwright.", // Server description
+          "command": "pnpm", // Using pnpm handles path resolution well
+          "args": [
+            "--dir",
+            "/absolute/path/to/your/project/search_mcp_server_TypeScript_plan@250504", // !! IMPORTANT: Replace with the **absolute path** to YOUR project directory !!
+            "start" // Executes the "start" script from package.json (node dist/index.js)
+          ],
+          // --- Alternatively, use node directly if you know the exact path ---
+          // "command": "node",
+          // "args": [
+          //   "/absolute/path/to/your/project/search_mcp_server_TypeScript_plan@250504/dist/index.js" // !! IMPORTANT: Replace with the **absolute path** to dist/index.js !!
+          // ],
+          "env": {
+            // Enter your actual key and ID here
+            "GOOGLE_API_KEY": "YOUR_GOOGLE_API_KEY_HERE",
+            "GOOGLE_CX_ID": "YOUR_GOOGLE_CX_ID_HERE"
+          },
+          "disabled": false, // Set to false to enable the server
+          "alwaysAllow": [ // List all tools provided by this server
+            "search",
+            "scrape",
+            "map"
+          ]
+        }
+    // --- End example snippet ---
     ```
-4.  儲存檔案並重新啟動 Roo Code / VS Code。
+    **Important Notes:**
+    *   Replace `/absolute/path/to/your/project/...` in `"args"` with the correct **absolute path** to your local `search_mcp_server_TypeScript_plan@250504` directory.
+    *   Replace `"YOUR_GOOGLE_API_KEY_HERE"` and `"YOUR_GOOGLE_CX_ID_HERE"` in the `"env"` object with your actual Google API Key and CX ID.
+    *   Ensure the overall JSON structure remains valid, paying attention to commas (no trailing comma after the last entry in an object or array).
 
-**方式 2: 使用 `.env` 文件 (本地開發備用)**
+4.  Save the `mcp_settings.json` file.
+5.  Restart Roo Code or VS Code for the new MCP server configuration to be loaded.
 
-如果您無法或不想修改 Roo Code 設定，可以將金鑰放在專案根目錄的 `.env` 文件中。
+**Method 2: Use `.env` File (Local Development / Fallback)**
 
-1.  複製範本文件：
+If modifying Roo Code settings is not feasible, you can place credentials in a `.env` file at the project root.
+
+1.  Copy the example file:
     ```bash
     cp .env.example .env
     ```
-2.  編輯新建立的 `.env` 文件，填入您的憑證：
+2.  Edit the newly created `.env` file and add your credentials:
     ```dotenv
     # .env
-    GOOGLE_API_KEY=在此填入您的 Google API Key
-    GOOGLE_CX_ID=在此填入您的 Google CX ID
-    # MCP_PORT=53011 # 此伺服器預設使用 stdio，此設定通常不影響
+    GOOGLE_API_KEY=YOUR_GOOGLE_API_KEY_HERE
+    GOOGLE_CX_ID=YOUR_GOOGLE_CX_ID_HERE
+    # MCP_PORT=53011 # Optional: The server defaults to stdio, this port is usually for HTTP mode
     ```
-    **⚠️ 重要安全提示:** `.env` 文件已被 `.gitignore` 排除，切勿將此文件或您的真實金鑰提交到任何版本控制系統 (如 Git)。
+    **⚠️ Security Warning:** The `.env` file is excluded by `.gitignore`. **Never** commit this file or your actual keys to any version control system (like Git).
 
-**注意:** 伺服器程式設計為優先嘗試讀取 Roo Code 提供的環境變數。如果未提供，才會讀取本地的 `.env` 文件。
+**Note:** The server code is designed to prioritize environment variables provided by the MCP client (Roo Code). It will only fall back to reading the local `.env` file if the variables are not supplied by the client.
 
-## ▶️ 啟動伺服器 (Running the Server)
+## ▶️ Running the Server
 
-*   **開發模式 (Development Mode):**
-    使用 `tsx` 提供即時重新載入功能，方便開發調試。
+*   **Development Mode:**
+    Uses `tsx` for live reloading, convenient for development and debugging.
     ```bash
     pnpm dev
     ```
-    伺服器將以 Stdio (標準輸入/輸出) 模式啟動，並監聽來自 MCP 客戶端的連接請求。修改 `src` 目錄下的程式碼將自動觸發伺服器重啟。
+    The server will start in Stdio mode, listening for connections from an MCP client. Changes to files in the `src` directory will automatically restart the server.
 
-*   **生產模式 (Production Mode):**
-    1.  **建置 (Build):** 將 TypeScript 程式碼編譯為 JavaScript。
+*   **Production Mode:**
+    1.  **Build:** Compile the TypeScript code to JavaScript.
         ```bash
         pnpm build
         ```
-        (編譯結果位於 `dist/` 目錄)
-    2.  **啟動 (Start):** 執行編譯後的 JavaScript 程式碼。
+        (Compiled files are output to the `dist/` directory)
+    2.  **Start:** Run the compiled JavaScript code.
         ```bash
         pnpm start
         ```
-        (此指令實際執行 `node dist/index.js`)
+        (This command executes `node dist/index.js`)
 
-## 🔧 工具使用說明 (MCP Tool Usage)
+## 🔧 MCP Tool Usage
 
-當伺服器成功啟動並被 Roo Code 等 MCP 客戶端連接後，即可調用以下工具：
+Once the server is running and connected to an MCP client like Roo Code, you can invoke the following tools:
 
 ### 1. `search`
 
-*   **功能:** 執行 Google 自訂網路搜尋。
-*   **描述:** "使用 Google Custom Search API 執行網路搜尋。"
-*   **輸入參數 (`arguments`):**
-    *   `query` (string, **必需**): 搜尋的關鍵字詞。
-    *   `num` (integer, 可選, 預設 10): 希望返回的結果數量，範圍 1 到 10。
-    *   `start` (integer, 可選, 預設 1): 從第幾個結果開始返回（用於分頁，例如 `start=1` 返回 1-10 項，`start=11` 返回 11-20 項）。
-*   **輸出:**
-    *   成功時: 返回一個文字字串，包含格式化的搜尋結果列表 (標題、連結、摘要)。
-    *   失敗時: 返回描述錯誤原因的文字字串。
-*   **範例調用 (JSON):**
+*   **Functionality:** Performs a Google Custom Search.
+*   **Description:** "Executes a web search using the Google Custom Search API."
+*   **Input Arguments (`arguments`):**
+    *   `query` (string, **required**): The search keywords or phrase.
+    *   `num` (integer, optional, default 10): The number of results to return (1-10).
+    *   `start` (integer, optional, default 1): The starting index of the results (for pagination, e.g., `start=1` for results 1-10, `start=11` for 11-20).
+*   **Output:**
+    *   Success: A text string containing a formatted list of search results (title, link, snippet).
+    *   Failure: A text string describing the error.
+*   **Example Invocation (JSON):**
     ```json
     {
       "tool_name": "search",
@@ -146,19 +180,19 @@
 
 ### 2. `scrape`
 
-*   **功能:** 抓取指定 URL 的網頁內容。
-*   **描述:** "使用 Playwright 抓取網頁內容，可選定特定元素或等待元素出現。"
-*   **輸入參數 (`arguments`):**
-    *   `url` (string, **必需**): 要抓取的目標網頁 URL。
-    *   `selector` (string, 可選): CSS 選擇器。如果提供，僅返回匹配的第一個元素的 `outerHTML`。省略則返回整個頁面的 HTML。
-    *   `waitForSelector` (string, 可選): 在抓取前，等待此 CSS 選擇器對應的元素出現在頁面中。
-    *   `timeout` (integer, 可選, 預設 60000): 頁面導航或等待選擇器的最長等待時間（毫秒）。
-*   **輸出:**
-    *   成功時: 返回包含抓取到的 HTML 內容的文字字串。
-    *   失敗時: 返回描述錯誤原因的文字字串（例如超時、找不到元素、URL 無效等）。
-*   **範例調用 (JSON):**
+*   **Functionality:** Scrapes content from a specified URL.
+*   **Description:** "Uses Playwright to scrape web content, allowing selection of specific elements or waiting for elements to appear."
+*   **Input Arguments (`arguments`):**
+    *   `url` (string, **required**): The URL of the web page to scrape.
+    *   `selector` (string, optional): A CSS selector. If provided, returns the `outerHTML` of the first matching element. If omitted, returns the full page HTML.
+    *   `waitForSelector` (string, optional): Waits for an element matching this CSS selector to appear on the page before scraping.
+    *   `timeout` (integer, optional, default 60000): Maximum time in milliseconds to wait for page navigation or the selector.
+*   **Output:**
+    *   Success: A text string containing the scraped HTML content.
+    *   Failure: A text string describing the error (e.g., timeout, selector not found, invalid URL).
+*   **Example Invocation (JSON):**
     ```json
-    // 抓取 GitHub MCP Servers 頁面的組織名稱
+    // Scrape the organization name from the GitHub MCP Servers page
     {
       "tool_name": "scrape",
       "arguments": {
@@ -168,7 +202,7 @@
     }
     ```
     ```json
-    // 抓取 example.com，但先等待 ID 為 #main 的元素出現
+    // Scrape example.com after waiting for the element with id #main
     {
       "tool_name": "scrape",
       "arguments": {
@@ -180,15 +214,15 @@
 
 ### 3. `map`
 
-*   **功能:** 解析 Sitemap 文件並提取其中列出的 URL。
-*   **描述:** "下載並解析指定的 Sitemap (sitemap.xml 或 Sitemap Index)，提取其中的 URL 列表。"
-*   **輸入參數 (`arguments`):**
-    *   `url` (string, **必需**): 指向 `sitemap.xml` 或 Sitemap Index 文件的 URL。
-*   **輸出:**
-    *   成功時: 返回一個文字字串，包含所有從 Sitemap 中成功提取並驗證為有效 URL 的列表，每行一個 URL。
-    *   失敗時: 返回描述錯誤原因的文字字串（例如下載失敗、XML 格式錯誤、URL 無效等）。
-*   **目前限制:** 如果輸入的是 Sitemap Index 文件，目前只會提取索引文件中列出的子 Sitemap URL，**不會**遞迴地去下載和解析這些子 Sitemap。
-*   **範例調用 (JSON):**
+*   **Functionality:** Parses a Sitemap file and extracts the URLs listed within.
+*   **Description:** "Downloads and parses the specified Sitemap (sitemap.xml or Sitemap Index), extracting the list of URLs."
+*   **Input Arguments (`arguments`):**
+    *   `url` (string, **required**): The URL pointing to the `sitemap.xml` or Sitemap Index file.
+*   **Output:**
+    *   Success: A text string containing a list of all valid URLs extracted from the Sitemap, one URL per line.
+    *   Failure: A text string describing the error (e.g., download failure, XML parsing error, invalid URL).
+*   **Current Limitation:** If a Sitemap Index URL is provided, this tool currently only extracts the URLs of the *child Sitemaps* listed in the index. It does **not** recursively fetch and parse those child Sitemaps.
+*   **Example Invocation (JSON):**
     ```json
     {
       "tool_name": "map",
@@ -198,46 +232,46 @@
     }
     ```
 
-## ✅ 測試 (Testing)
+## ✅ Testing
 
-專案已配置 Jest 和 ts-jest 用於測試。
+The project is configured for testing using Jest and ts-jest.
 
-*   **執行所有測試:**
+*   **Run all tests:**
     ```bash
     pnpm test
     ```
-*   **監看模式 (Watch Mode):**
+*   **Run tests in watch mode:**
     ```bash
     pnpm test:watch
     ```
-*   **產生覆蓋率報告:**
+*   **Generate coverage report:**
     ```bash
     pnpm test:cov
     ```
-    (報告位於 `coverage/` 目錄)
+    (Report located in `coverage/` directory)
 
-**注意:** 目前尚未編寫任何實際的測試案例 (`tests/` 目錄下只有設定檔)。歡迎貢獻單元測試和整合測試！
+**Note:** No actual test cases have been written yet (the `tests/` directory only contains setup). Contributions for unit and integration tests are welcome!
 
-## ✨ 程式碼風格 (Code Style)
+## ✨ Code Style
 
-本專案使用 ESLint 進行語法檢查和風格規範，並使用 Prettier 進行程式碼自動格式化。相關配置已設定完成。
+This project uses ESLint for linting and style enforcement, and Prettier for automatic code formatting. Configurations are included.
 
-*   **檢查 Lint 錯誤:** `pnpm lint`
-*   **自動修復 Lint 問題:** `pnpm lint:fix`
-*   **檢查 Prettier 格式:** `pnpm format:check`
-*   **自動格式化程式碼:** `pnpm format`
+*   **Check for lint errors:** `pnpm lint`
+*   **Auto-fix lint issues:** `pnpm lint:fix`
+*   **Check formatting:** `pnpm format:check`
+*   **Auto-format code:** `pnpm format`
 
-## 📄 授權 (License)
+## 📄 License
 
-本專案預計採用 **MIT 授權**。完整的授權條款請參見 [LICENSE](LICENSE) 文件。
-(注意：`LICENSE` 文件目前是空的，需要填入標準 MIT 授權文本。)
+This project is intended to be licensed under the **MIT License**. Please refer to the [LICENSE](LICENSE) file for the full terms.
+(Note: The `LICENSE` file needs to be populated with the standard MIT License text.)
 
-## 💡 已知限制與未來工作 (Known Limitations & Future Work)
+## 💡 Known Limitations & Future Work
 
-*   **API 金鑰安全:** 切勿將您的 `GOOGLE_API_KEY` 或 `GOOGLE_CX_ID` 硬編碼到程式碼中或提交到版本控制系統。請務必使用環境變數 (透過 Roo Code 設定或 `.env` 文件) 來管理這些機密資訊。
-*   **`map` 工具遞迴:** 目前 `map` 工具遇到 Sitemap Index 時僅提取索引本身的 URL，尚未實現遞迴下載和解析子 Sitemap 的功能。
-*   **測試覆蓋率:** 目前專案缺乏測試，需要為各個工具的 handler 編寫單元測試和整合測試。
-*   **錯誤處理:** 可以進一步細化和改進工具的錯誤處理邏輯，提供更友善的錯誤訊息給使用者。
-*   **Roo Code 配置的 API Key 回退:** 雖然計畫文件建議，但目前伺服器程式碼中尚未明確實作從 Roo Code 設定讀取環境變數的邏輯，僅依賴 `dotenv` 讀取 `.env` 文件或系統環境變數。未來可考慮加入讀取 MCP 客戶端上下文 (context) 的邏輯。
-*   **提交前自動檢查:** 可考慮整合 Husky 和 lint-staged，在 `git commit` 時自動執行 lint 和 format 檢查。
-*   **授權文件:** 填寫 `LICENSE` 文件內容。
+*   **API Key Security:** Never hardcode your `GOOGLE_API_KEY` or `GOOGLE_CX_ID` directly into the source code or commit them to version control. Always use environment variables (via Roo Code settings or `.env` file).
+*   **`map` Tool Recursion:** The `map` tool currently does not recursively parse Sitemap Index files. Implementing this would provide a more complete URL list.
+*   **Test Coverage:** The project lacks tests. Writing unit and integration tests for the tool handlers is crucial for ensuring reliability.
+*   **Error Handling:** Error handling can be further refined to provide more specific and user-friendly error messages.
+*   **API Key Fallback Logic:** While planned, the code currently relies on `dotenv` or system environment variables, and doesn't explicitly implement the logic to read API keys from the MCP client context as a primary source.
+*   **Pre-commit Hooks:** Consider integrating Husky and lint-staged to automatically run linters and formatters before `git commit`.
+*   **License File:** Populate the `LICENSE` file with the chosen (MIT) license text.
