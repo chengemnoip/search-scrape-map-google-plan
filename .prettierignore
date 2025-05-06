@@ -1,0 +1,18 @@
+# Inherit ignores from .gitignore
+node_modules/
+dist/
+coverage/
+*.log
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Specific files Prettier shouldn't touch
+*.md
+*.yaml
+*.yml
+*.json
+!package.json
+!.eslintrc.json
+!.prettierrc.json

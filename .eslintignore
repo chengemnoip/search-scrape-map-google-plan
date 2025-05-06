@@ -1,0 +1,3 @@
+# Inherit ignores from .gitignore
+node_modules/
+dist/

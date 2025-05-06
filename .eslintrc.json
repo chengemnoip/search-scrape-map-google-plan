@@ -1,0 +1,44 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier" // Disables rules conflicting with Prettier
+  ],
+  "rules": {
+    "prettier/prettier": "warn", // Report Prettier violations as ESLint warnings
+    "no-unused-vars": "off", // Disable base rule, use TS version below
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "warn", // Warn instead of error for explicit 'any'
+    "@typescript-eslint/explicit-module-boundary-types": "off" // Allow functions without explicit return types for now
+    // Add other project-specific rules as needed
+  },
+  "env": {
+    "node": true,
+    "es2022": true,
+    "jest": true // Add Jest environment
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json" // Optional: Enable rules requiring type information
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "coverage/",
+    "*.js", // Ignore compiled JS files if any
+    "*.d.ts", // Ignore declaration files
+    "*.md",
+    "*.yaml",
+    "*.json",
+    "!./package.json", // Don't ignore root package.json
+    "!./.eslintrc.json", // Don't ignore this file
+    "!./.prettierrc.json" // Don't ignore prettier config
+  ]
+}
