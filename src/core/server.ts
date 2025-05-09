@@ -1,3 +1,4 @@
+import { ScrapeInputSchema } from '../tools/scrape/schema';
 // src/core/server.ts
 
 /**
@@ -65,14 +66,9 @@ export async function startServer(): Promise<void> {
   console.log("  - 工具 'search' 已註冊。");
 
   // 註冊 scrape 工具
+  // 使用導入的 ScrapeInputSchema
   server.tool('scrape',
-    // 直接定義 scrape schema 形狀
-    {
-        url: z.string().url({ message: '請提供有效的 URL' }),
-        selector: z.string().optional().describe('CSS 選擇器，用於僅抓取特定元素的 outerHTML'),
-        waitForSelector: z.string().optional().describe('等待此 CSS 選擇器出現在頁面上'),
-        timeout: z.number().int().positive().optional().default(60000).describe('頁面加載或等待選擇器的超時時間（毫秒）'),
-    },
+    ScrapeInputSchema.shape, // 使用完整的輸入 schema 的原始形狀
     scrapeToolHandler
   );
   console.log("  - 工具 'scrape' 已註冊。");

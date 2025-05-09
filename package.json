@@ -1,6 +1,6 @@
 {
   "name": "search_mcp_server_TypeScript_plan@250504",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -26,10 +26,12 @@
     "fast-xml-parser": "^5.2.2",
     "google-auth-library": "^9.15.1",
     "playwright": "^1.52.0",
+    "turndown": "^7.2.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
+    "@types/turndown": "^5.0.5",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "eslint": "^9.26.0",

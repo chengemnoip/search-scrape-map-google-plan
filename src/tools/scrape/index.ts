@@ -1,40 +1,66 @@
 // src/tools/scrape/index.ts
 
-import { chromium, Browser, Page } from 'playwright'; // 移除 PlaywrightLaunchOptions
+import { chromium, Browser, Page } from 'playwright';
 import { ScrapeInputSchema, ScrapeOutputSchema, ScrapeInput, ScrapeOutput } from './schema';
-// 移除類型導入，依賴推斷 (如同 search 工具的修正)
+import TurndownService from 'turndown'; // 引入 TurndownService
+
+// 在模組層級創建一個可選的瀏覽器實例
+let browserInstance: Browser | null = null;
+
+/**
+ * 獲取或創建 Playwright 瀏覽器實例。
+ * 實現瀏覽器實例池，避免重複啟動和關閉瀏覽器。
+ */
+async function getBrowserInstance(): Promise<Browser> {
+  if (browserInstance && !browserInstance.isConnected()) {
+    // 如果現有實例存在但已斷開連接，則設置為 null
+    browserInstance = null;
+  }
+
+  if (!browserInstance) {
+    const launchOptions = {
+      headless: true, // 預設使用無頭模式
+      // args: ['--no-sandbox', '--disable-setuid-sandbox'] // 在某些環境下可能需要
+    };
+    console.log('啟動新的瀏覽器實例...');
+    browserInstance = await chromium.launch(launchOptions);
+  }
+
+  return browserInstance;
+}
+
 
 /**
  * Scrape 工具的處理函式。
  * @param params - 經過 ScrapeInputSchema 驗證的輸入參數。
  * @returns - 符合 MCP ToolResponse 格式的抓取結果或錯誤訊息。
  */
-// 移除類型註釋和 extra 參數，完全依賴推斷
 async function scrapeToolHandler(params: ScrapeInput) {
-  const { url, selector, waitForSelector, timeout } = params;
+  const { url, selector, waitForSelector, timeout, outputFormat } = params; // 引入 outputFormat
 
-  console.log(`執行網頁抓取: url="${url}"${selector ? `, selector="${selector}"` : ''}${waitForSelector ? `, waitForSelector="${waitForSelector}"` : ''}, timeout=${timeout}`);
+  console.log(`執行網頁抓取: url="${url}"${selector ? `, selector="${selector}"` : ''}${waitForSelector ? `, waitForSelector="${waitForSelector}"` : ''}, timeout=${timeout}, outputFormat=${outputFormat}`);
 
-  let browser: Browser | null = null;
+  let context;
+  let page: Page | null = null;
+
   try {
-    // Playwright 啟動選項 (移除類型註釋)
-    const launchOptions = {
-      headless: true, // 預設使用無頭模式
-      // args: ['--no-sandbox', '--disable-setuid-sandbox'] // 在某些環境下可能需要
-    };
-
-    // 啟動瀏覽器
-    browser = await chromium.launch(launchOptions);
-    const context = await browser.newContext({
+    // 獲取瀏覽器實例
+    const browser = await getBrowserInstance();
+    
+    // 從實例創建新的上下文和頁面
+    context = await browser.newContext({
         // 可選：設定 User Agent, viewport 等
         // userAgent: 'Mozilla/5.0 ...',
         // viewport: { width: 1280, height: 720 }
     });
-    const page: Page = await context.newPage();
+    page = await context.newPage();
 
     // 導航到目標 URL
     console.log(`導航至 ${url}...`);
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeout }); // 等待 DOM 加載完成
+    // 使用 AbortController 實現更精確的超時控制（Playwright goto 已有 timeout，此處作為備選或額外控制）
+    const navigationPromise = page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeout }); // 等待 DOM 加載完成
+    await navigationPromise;
+
 
     // 如果需要，等待特定選擇器
     if (waitForSelector) {
@@ -50,23 +76,41 @@ async function scrapeToolHandler(params: ScrapeInput) {
       if (!element) {
           throw new Error(`選擇器 "${selector}" 未找到元素。`);
       }
-      content = await element.evaluate(node => node.outerHTML);
+      content = await element.evaluate((node: Element) => node.outerHTML);
     } else {
-      console.log('抓取整個頁面 HTML...');
-      content = await page.content();
+      // 加強內容提取控制：在沒有 selector 時，優先獲取頁面主要文本內容
+      console.log('抓取頁面主要文本內容...');
+      // 可以嘗試更智能的方式提取主要內容，例如使用特定的庫或基於內容結構判斷
+      // 這裡簡單地獲取 body 的 innerText 作為示例
+      try {
+          content = await page.locator('body').innerText();
+      } catch (e) {
+          console.warn('無法獲取 body innerText，嘗試獲取整個頁面 content()');
+          content = await page.content(); // 回退到獲取整個頁面 HTML
+      }
     }
 
     const finalUrl = page.url(); // 獲取最終的 URL (可能經過重定向)
 
-    // 關閉瀏覽器
-    await browser.close();
-    browser = null; // 標記為已關閉
+    // 關閉頁面和上下文，但不關閉瀏覽器實例
+    await page.close();
+    await context.close();
+    page = null; // 標記為已關閉
 
     console.log(`抓取成功: ${finalUrl}`);
 
-    const result: ScrapeOutput = { content, url: finalUrl };
+    let result: ScrapeOutput;
 
-    // 驗證輸出 (可選)
+    // 根據 outputFormat 處理內容
+    if (outputFormat === 'markdown') {
+      const turndownService = new TurndownService();
+      const markdownContent = turndownService.turndown(content);
+      result = { markdown: markdownContent, url: finalUrl };
+    } else { // outputFormat === 'html'
+      result = { html: content, url: finalUrl };
+    }
+
+    // 驗證輸出
     const validationResult = ScrapeOutputSchema.safeParse(result);
      if (!validationResult.success) {
         console.error("Scrape Output 驗證失敗:", validationResult.error.errors);
@@ -76,16 +120,25 @@ async function scrapeToolHandler(params: ScrapeInput) {
         };
     }
 
-    // 返回成功結果 (只返回抓取的內容)
+    // 返回成功結果
+    // 根據 outputFormat 返回相應的內容
     return {
-      content: [{ type: 'text' as const, text: validationResult.data.content }],
+      content: [{
+        type: 'text' as const,
+        text: outputFormat === 'markdown' ? validationResult.data.markdown || '' : validationResult.data.html || ''
+      }],
     };
 
   } catch (error) {
     console.error('執行網頁抓取時發生錯誤:', error);
-    if (browser) {
-      await browser.close(); // 確保瀏覽器被關閉
+    // 在錯誤發生時確保頁面和上下文被關閉
+    if (page) {
+      await page.close();
     }
+    if (context) {
+        await context.close();
+    }
+
 
     let errorMessage = '執行網頁抓取時發生未知錯誤。';
      if (error instanceof Error) {

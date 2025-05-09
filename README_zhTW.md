@@ -6,7 +6,7 @@
 
 一個符合 Model Context Protocol (MCP) 規範的 TypeScript 伺服器，提供網路搜尋、網頁抓取和 Sitemap 解析工具，旨在與支援 MCP 的 AI 助理 (如 Roo Code) 無縫整合。
 
-**版本:** 1.0.0
+**版本:** 1.1.0
 **GitHub 倉庫:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
 **原始計畫文件:** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
 
@@ -17,17 +17,17 @@
 本 MCP 伺服器提供以下核心工具：
 
 *   **網路搜尋 (`search`)**: 透過整合 Google Custom Search JSON API，提供強大的網路搜尋能力。支援指定結果數量和分頁。
-*   **網頁抓取 (`scrape`)**: 利用 Playwright (Chromium 核心) 抓取指定 URL 的網頁內容。能夠處理 JavaScript 動態渲染的頁面，並可選擇性地抓取特定 CSS 選擇器對應的元素內容，或等待特定元素載入完成。
+*   **網頁抓取 (`scrape`)**: 利用 Playwright (Chromium 核心) 抓取指定 URL 的網頁內容。能夠處理 JavaScript 動態渲染的頁面，並可選擇性地抓取特定 CSS 選擇器對應的元素內容，或等待特定元素載入完成。**現在預設輸出 Markdown 格式的內容，並可選擇性輸出原始 HTML。**
 *   **Sitemap 解析 (`map`)**: 自動下載並解析 `sitemap.xml` 或 Sitemap Index 文件，快速提取其中包含的所有 URL 列表 (註：目前僅處理索引文件的第一層)。
 
 ## 🛠️ 技術棧 (Tech Stack)
 
 *   **語言:** TypeScript 5.x
-*   **運行環境:** Node.js (^18.0 || ^20.0)
+*   **運行環境:** Node.js (^18.0 || ^20.0 || ^22.0)
 *   **MCP SDK:** `@modelcontextprotocol/sdk`
 *   **核心依賴:**
     *   `search`: `axios` (HTTP 請求)
-    *   `scrape`: `playwright` (瀏覽器自動化)
+    *   `scrape`: `playwright` (瀏覽器自動化), `turndown` (HTML 轉 Markdown)
     *   `map`: `axios` (HTTP 請求), `fast-xml-parser` (XML 解析)
 *   **Schema 驗證:** `zod`
 *   **開發與建置:** `pnpm`, `tsx`, `typescript`, `dotenv`
@@ -38,7 +38,7 @@
 
 ### 前置條件 (Prerequisites)
 
-*   **Node.js:** 建議使用 LTS 版本 18 或 20。
+*   **Node.js:** 建議使用 LTS 版本 18, 20, 或 22。
 *   **pnpm:** 推薦使用 pnpm 作為套件管理器 (`npm install -g pnpm`)。當然，您也可以使用 npm 或 yarn。
 *   **Git:** 用於版本控制。
 *   **Google API Key & CX ID:** `search` 工具需要 Google Custom Search API 的憑證。
@@ -48,9 +48,9 @@
 1.  **Clone 倉庫:**
     ```bash
     git clone https://github.com/chengemnoip/search-scrape-map-google-plan.git
-    cd search-scrape-map-google-plan
+    # 請將下面的目錄名稱替換為您實際的本地目錄名稱
+    cd search_mcp_server_TypeScript_plan@250504
     ```
-    (請將上面的 `search-scrape-map-google-plan` 替換為您實際的本地目錄名稱 `search_mcp_server_TypeScript_plan@250504`)
 
 2.  **安裝依賴:**
     ```bash
@@ -113,7 +113,6 @@
 **方式 2: 使用 `.env` 文件 (本地開發備用)**
 
 如果您無法或不想修改 Roo Code 設定，可以將金鑰放在專案根目錄的 `.env` 文件中。
-
 1.  複製範本文件：
     ```bash
     cp .env.example .env
@@ -179,18 +178,19 @@
 ### 2. `scrape`
 
 *   **功能:** 抓取指定 URL 的網頁內容。
-*   **描述:** "使用 Playwright 抓取網頁內容，可選定特定元素或等待元素出現。"
+*   **描述:** "使用 Playwright 抓取網頁內容，可選定特定元素或等待元素出現。支援輸出 Markdown 或 HTML 格式的內容。"
 *   **輸入參數 (`arguments`):**
     *   `url` (string, **必需**): 要抓取的目標網頁 URL。
     *   `selector` (string, 可選): CSS 選擇器。如果提供，僅返回匹配的第一個元素的 `outerHTML`。省略則返回整個頁面的 HTML。
     *   `waitForSelector` (string, 可選): 在抓取前，等待此 CSS 選擇器對應的元素出現在頁面中。
     *   `timeout` (integer, 可選, 預設 60000): 頁面導航或等待選擇器的最長等待時間（毫秒）。
+    *   `outputFormat` (string, 可選, 預設 "markdown"): 指定輸出內容的格式，可為 `"markdown"` 或 `"html"`。
 *   **輸出:**
-    *   成功時: 返回包含抓取到的 HTML 內容的文字字串。
+    *   成功時: 返回包含抓取到的內容的文字字串，格式由 `outputFormat` 參數決定。
     *   失敗時: 返回描述錯誤原因的文字字串（例如超時、找不到元素、URL 無效等）。
 *   **範例調用 (JSON):**
     ```json
-    // 抓取 GitHub MCP Servers 頁面的組織名稱
+    // 抓取 GitHub MCP Servers 頁面的組織名稱 (預設輸出 Markdown)
     {
       "tool_name": "scrape",
       "arguments": {
@@ -200,12 +200,22 @@
     }
     ```
     ```json
-    // 抓取 example.com，但先等待 ID 為 #main 的元素出現
+    // 抓取 example.com，但先等待 ID 為 #main 的元素出現 (預設輸出 Markdown)
     {
       "tool_name": "scrape",
       "arguments": {
         "url": "https://example.com",
         "waitForSelector": "#main"
+      }
+    }
+    ```
+    ```json
+    // 抓取 example.com 並輸出原始 HTML
+    {
+      "tool_name": "scrape",
+      "arguments": {
+        "url": "https://example.com",
+        "outputFormat": "html"
       }
     }
     ```
@@ -219,7 +229,7 @@
 *   **輸出:**
     *   成功時: 返回一個文字字串，包含所有從 Sitemap 中成功提取並驗證為有效 URL 的列表，每行一個 URL。
     *   失敗時: 返回描述錯誤原因的文字字串（例如下載失敗、XML 格式錯誤、URL 無效等）。
-*   **目前限制:** 如果輸入的是 Sitemap Index 文件，目前只會提取索引文件中列出的子 Sitemap URL，**不會**遞迴地去下載和解析這些子 Sitemap。
+*   **目前限制:** 如果輸入的是 Sitemap Index 文件，目前只會提取索引本身的 URL，尚未實現遞迴下載和解析子 Sitemap 的功能。
 *   **範例調用 (JSON):**
     ```json
     {

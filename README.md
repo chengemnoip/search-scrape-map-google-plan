@@ -6,7 +6,7 @@
 
 A TypeScript server compliant with the Model Context Protocol (MCP), providing web search, web scraping, and Sitemap parsing tools, designed for seamless integration with MCP-enabled AI assistants like Roo Code.
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **GitHub Repository:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
 **Original Plan Document (Chinese):** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
 
@@ -17,17 +17,17 @@ A TypeScript server compliant with the Model Context Protocol (MCP), providing w
 This MCP server offers the following core tools:
 
 *   **Web Search (`search`)**: Leverages the Google Custom Search JSON API for powerful web searching capabilities. Supports specifying the number of results and pagination.
-*   **Web Scraping (`scrape`)**: Uses Playwright (Chromium core) to scrape web content from a given URL. Capable of handling dynamically rendered pages via JavaScript, optionally scraping content from specific CSS selectors, or waiting for specific elements to load.
+*   **Web Scraping (`scrape`)**: Uses Playwright (Chromium core) to scrape web content from a given URL. Capable of handling dynamically rendered pages via JavaScript, optionally scraping content from specific CSS selectors, or waiting for specific elements to load. **Now supports outputting content in Markdown format by default, with an option to get raw HTML.**
 *   **Sitemap Parsing (`map`)**: Automatically downloads and parses `sitemap.xml` or Sitemap Index files, quickly extracting the list of URLs contained within (Note: Currently only processes the first level of index files).
 
 ## 🛠️ Tech Stack
 
 *   **Language:** TypeScript 5.x
-*   **Runtime:** Node.js (^18.0 || ^20.0)
+*   **Runtime:** Node.js (^18.0 || ^20.0 || ^22.0)
 *   **MCP SDK:** `@modelcontextprotocol/sdk`
 *   **Core Dependencies:**
     *   `search`: `axios` (HTTP requests)
-    *   `scrape`: `playwright` (Browser automation)
+    *   `scrape`: `playwright` (Browser automation), `turndown` (HTML to Markdown)
     *   `map`: `axios` (HTTP requests), `fast-xml-parser` (XML parsing)
 *   **Schema Validation:** `zod`
 *   **Development & Build:** `pnpm`, `tsx`, `typescript`, `dotenv`
@@ -38,7 +38,7 @@ This MCP server offers the following core tools:
 
 ### Prerequisites
 
-*   **Node.js:** LTS versions 18 or 20 are recommended.
+*   **Node.js:** LTS versions 18, 20, or 22 are recommended.
 *   **pnpm:** Recommended package manager (`npm install -g pnpm`). Alternatively, npm or yarn can be used.
 *   **Git:** For version control.
 *   **Google API Key & CX ID:** Required for the `search` tool to function, obtained from Google Cloud Console and Programmable Search Engine setup.
@@ -181,14 +181,15 @@ Once the server is running and connected to an MCP client like Roo Code, you can
 ### 2. `scrape`
 
 *   **Functionality:** Scrapes content from a specified URL.
-*   **Description:** "Uses Playwright to scrape web content, allowing selection of specific elements or waiting for elements to appear."
+*   **Description:** "Uses Playwright to scrape web content, allowing selection of specific elements or waiting for elements to appear. Supports outputting content in Markdown or HTML format."
 *   **Input Arguments (`arguments`):**
     *   `url` (string, **required**): The URL of the web page to scrape.
     *   `selector` (string, optional): A CSS selector. If provided, returns the `outerHTML` of the first matching element. If omitted, returns the full page HTML.
     *   `waitForSelector` (string, optional): Waits for an element matching this CSS selector to appear on the page before scraping.
     *   `timeout` (integer, optional, default 60000): Maximum time in milliseconds to wait for page navigation or the selector.
+    *   `outputFormat` (string, optional, default "markdown"): The desired output format. Can be `"markdown"` or `"html"`.
 *   **Output:**
-    *   Success: A text string containing the scraped HTML content.
+    *   Success: A text string containing the scraped content in the specified format.
     *   Failure: A text string describing the error (e.g., timeout, selector not found, invalid URL).
 *   **Example Invocation (JSON):**
     ```json
@@ -208,6 +209,16 @@ Once the server is running and connected to an MCP client like Roo Code, you can
       "arguments": {
         "url": "https://example.com",
         "waitForSelector": "#main"
+      }
+    }
+    ```
+    ```json
+    // Scrape example.com and get raw HTML output
+    {
+      "tool_name": "scrape",
+      "arguments": {
+        "url": "https://example.com",
+        "outputFormat": "html"
       }
     }
     ```
