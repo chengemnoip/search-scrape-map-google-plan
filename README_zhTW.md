@@ -8,7 +8,6 @@
 
 **版本:** 1.1.0
 **GitHub 倉庫:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
-**原始計畫文件:** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
 
 ---
 

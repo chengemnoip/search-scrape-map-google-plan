@@ -8,7 +8,6 @@ A TypeScript server compliant with the Model Context Protocol (MCP), providing w
 
 **Version:** 1.1.0
 **GitHub Repository:** [https://github.com/chengemnoip/search-scrape-map-google-plan](https://github.com/chengemnoip/search-scrape-map-google-plan)
-**Original Plan Document (Chinese):** [search_mcp_server_TypeScript_plan_250504.md](search_mcp_server_TypeScript_plan_250504.md)
 
 ---
 
