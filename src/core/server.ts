@@ -1,4 +1,5 @@
 import { ScrapeInputSchema } from '../tools/scrape/schema';
+import { SearchInputSchema } from '../tools/search/schema';
 // src/core/server.ts
 
 /**
@@ -45,19 +46,8 @@ export async function startServer(): Promise<void> {
   console.log('註冊工具...');
 
   server.tool('search',
-    // 直接在此處定義 schema 形狀
-    {
-      query: z.string().min(1, { message: '搜尋關鍵字不可為空' }).describe('要執行的搜尋查詢'),
-      num: z
-        .number()
-        .int()
-        .min(1)
-        .max(10)
-        .optional()
-        .default(10)
-        .describe('要返回的搜尋結果數量 (1-10)'),
-      start: z.number().int().min(1).optional().default(1).describe('結果的起始索引 (用於分頁)'),
-    },
+    // 使用導入的 SearchInputSchema
+    SearchInputSchema.shape,
     searchToolHandler  // The async function to handle the tool call
     // 注意：輸出 schema (SearchOutputSchema) 由 handler 的返回類型推斷，
     // 或者如果 handler 返回 ToolResponse，則由 ToolResponse 的泛型參數推斷。

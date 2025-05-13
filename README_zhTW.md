@@ -15,7 +15,7 @@
 
 本 MCP 伺服器提供以下核心工具：
 
-*   **網路搜尋 (`search`)**: 透過整合 Google Custom Search JSON API，提供強大的網路搜尋能力。支援指定結果數量和分頁。
+*   **網路搜尋 (`search`)**: 透過整合 Google Custom Search JSON API，提供強大的網路搜尋能力。支援指定結果數量和分頁。**現在支援 Google Custom Search JSON API v1 - cse.list 參考中列出的所有查詢參數。**
 *   **網頁抓取 (`scrape`)**: 利用 Playwright (Chromium 核心) 抓取指定 URL 的網頁內容。能夠處理 JavaScript 動態渲染的頁面，並可選擇性地抓取特定 CSS 選擇器對應的元素內容，或等待特定元素載入完成。**現在預設輸出 Markdown 格式的內容，並可選擇性輸出原始 HTML。**
 *   **Sitemap 解析 (`map`)**: 自動下載並解析 `sitemap.xml` 或 Sitemap Index 文件，快速提取其中包含的所有 URL 列表 (註：目前僅處理索引文件的第一層)。
 
@@ -155,21 +155,66 @@
 ### 1. `search`
 
 *   **功能:** 執行 Google 自訂網路搜尋。
-*   **描述:** "使用 Google Custom Search API 執行網路搜尋。"
+*   **描述:** "使用 Google Custom Search API 執行網路搜尋，支援所有可用的查詢參數。"
 *   **輸入參數 (`arguments`):**
     *   `query` (string, **必需**): 搜尋的關鍵字詞。
     *   `num` (integer, 可選, 預設 10): 希望返回的結果數量，範圍 1 到 10。
     *   `start` (integer, 可選, 預設 1): 從第幾個結果開始返回（用於分頁，例如 `start=1` 返回 1-10 項，`start=11` 返回 11-20 項）。
+    *   `c2coff` (string, 可選): 啟用或停用「簡體中文搜尋」。支援值："1" (停用), "0" (啟用)。
+    *   `cr` (string, 可選): 限制顯示來自特定國家/地區的文件搜尋結果。
+    *   `dateRestrict` (string, 可選): 以日期限制結果。支援值：`d[number]` (天), `w[number]` (週), `m[number]` (月), `y[number]` (年)。
+    *   `exactTerms` (string, 可選): 搜尋結果中所有文件必須包含的詞組。
+    *   `excludeTerms` (string, 可選): 不應出現在任何文件中的字詞或詞組。
+    *   `fileType` (string, 可選): 限制只傳回指定擴充功能檔案的結果。
+    *   `filter` (string, 可選): 控管是否開啟重複內容篩選器。支援值："0" (關閉), "1" (啟用)。
+    *   `gl` (string, 可選): 使用者的地理位置 (雙字母國家/地區代碼)。
+    *   `hq` (string, 可選): 將指定查詢字詞附加至查詢 (邏輯 AND 運算)。
+    *   `lr` (string, 可選): 僅搜尋特定語言。
+    *   `orTerms` (string, 可選): 提供要在文件中尋找的其他搜尋字詞。
+    *   `rights` (string, 可選): 依授權建立的篩選器。支援值：`cc_publicdomain`, `cc_attribute`, `cc_sharealike`, `cc_noncommercial`, `cc_nonderived` 及其組合。
+    *   `safe` (string, 可選): 搜尋安全層級。支援值：`"active"` (啟用安全搜尋), `"off"` (停用安全搜尋，預設)。
+    *   `searchType` (string, 可選): 指定搜尋類型。支援值：`"image"` (自訂圖片搜尋)。未指定則限於網頁。
+    *   `siteSearch` (string, 可選): 指定要一律納入或從結果中排除的網站。
+    *   `siteSearchFilter` (string, 可選): 控管要納入或排除 `siteSearch` 參數所命名網站的結果。支援值：`"e"` (排除), `"i"` (加入)。
+    *   `sort` (string, 可選): 要套用至結果的排序運算式 (例如 `sort=date`)。
+    *   `imgColorType` (string, 可選): 傳回黑白、灰階、透明或彩色圖片。僅在 `searchType` 為 `"image"` 時相關。支援值：`"color"`, `"gray"`, `"mono"`, `"trans"`。
+    *   `imgDominantColor` (string, 可選): 傳回特定主色的圖片。僅在 `searchType` 為 `"image"` 時相關。支援值：`"black"`, `"blue"`, `"brown"`, `"gray"`, `"green"`, `"orange"`, `"pink"`, `"purple"`, `"red"`, `"teal"`, `"white"`, `"yellow"`。
+    *   `imgSize` (string, 可選): 傳回指定大小的圖片。僅在 `searchType` 為 `"image"` 時相關。支援值：`"huge"`, `"icon"`, `"large"`, `"medium"`, `"small"`, `"xlarge"`, `"xxlarge"`。
+    *   `imgType` (string, 可選): 傳回特定類型的圖片。僅在 `searchType` 為 `"image"` 時相關。支援值：`"clipart"`, `"face"`, `"lineart"`, `"stock"`, `"photo"`, `"animated"`。
+    *   `highRange` (string, 可選): 指定搜尋範圍的結束值。與 `lowRange` 搭配使用。
+    *   `lowRange` (string, 可選): 指定搜尋範圍的起始值。與 `highRange` 搭配使用。
+    *   `linkSite` (string, 可選): 指定所有搜尋結果應包含特定網址的連結。
 *   **輸出:**
-    *   成功時: 返回一個文字字串，包含格式化的搜尋結果列表 (標題、連結、摘要)。
+    *   成功時: 返回一個文字字串，包含格式化的搜尋結果列表 (標題、連結、摘要，圖片搜尋可能包含縮圖連結)，以及搜尋資訊 (總結果數、耗時) 和下一頁資訊 (如果存在)。
     *   失敗時: 返回描述錯誤原因的文字字串。
 *   **範例調用 (JSON):**
     ```json
     {
       "tool_name": "search",
       "arguments": {
-        "query": "TypeScript best practices",
+        "query": "TypeScript 最佳實踐",
         "num": 5
+      }
+    }
+    ```
+    ```json
+    {
+      "tool_name": "search",
+      "arguments": {
+        "query": "貓咪圖片",
+        "searchType": "image",
+        "imgSize": "large",
+        "imgColorType": "color"
+      }
+    }
+    ```
+    ```json
+    {
+      "tool_name": "search",
+      "arguments": {
+        "query": "site:developer.mozilla.org javascript array methods",
+        "siteSearch": "developer.mozilla.org",
+        "siteSearchFilter": "i"
       }
     }
     ```
@@ -247,7 +292,7 @@
     ```bash
     pnpm test
     ```
-*   **監看模式 (Watch Mode):**
+*   **監看模式 (Watch Mode)::**
     ```bash
     pnpm test:watch
     ```

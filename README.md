@@ -15,7 +15,7 @@ A TypeScript server compliant with the Model Context Protocol (MCP), providing w
 
 This MCP server offers the following core tools:
 
-*   **Web Search (`search`)**: Leverages the Google Custom Search JSON API for powerful web searching capabilities. Supports specifying the number of results and pagination.
+*   **Web Search (`search`)**: Leverages the Google Custom Search JSON API for powerful web searching capabilities. Supports specifying the number of results and pagination. **Now supports all query parameters listed in the Google Custom Search JSON API v1 - cse.list reference.**
 *   **Web Scraping (`scrape`)**: Uses Playwright (Chromium core) to scrape web content from a given URL. Capable of handling dynamically rendered pages via JavaScript, optionally scraping content from specific CSS selectors, or waiting for specific elements to load. **Now supports outputting content in Markdown format by default, with an option to get raw HTML.**
 *   **Sitemap Parsing (`map`)**: Automatically downloads and parses `sitemap.xml` or Sitemap Index files, quickly extracting the list of URLs contained within (Note: Currently only processes the first level of index files).
 
@@ -158,14 +158,38 @@ Once the server is running and connected to an MCP client like Roo Code, you can
 ### 1. `search`
 
 *   **Functionality:** Performs a Google Custom Search.
-*   **Description:** "Executes a web search using the Google Custom Search API."
+*   **Description:** "Executes a web search using the Google Custom Search API, supporting all available query parameters."
 *   **Input Arguments (`arguments`):**
     *   `query` (string, **required**): The search keywords or phrase.
     *   `num` (integer, optional, default 10): The number of results to return (1-10).
     *   `start` (integer, optional, default 1): The starting index of the results (for pagination, e.g., `start=1` for results 1-10, `start=11` for 11-20).
+    *   `c2coff` (string, optional): Enables or disables simplified Chinese search. Supported values: "1" (disabled), "0" (enabled).
+    *   `cr` (string, optional): Restricts results to documents from specified countries.
+    *   `dateRestrict` (string, optional): Restricts results by date. Supported values: `d[number]` (days), `w[number]` (weeks), `m[number]` (months), `y[number]` (years).
+    *   `exactTerms` (string, optional): Identifies a phrase that all documents in the search results must contain.
+    *   `excludeTerms` (string, optional): Identifies a word or phrase that should not appear in any documents in the search results.
+    *   `fileType` (string, optional): Restricts results to files of a specified filetype.
+    *   `filter` (string, optional): Controls turning on or off the duplicate content filter. Supported values: "0" (off), "1" (on).
+    *   `gl` (string, optional): Geolocation of the user (two-letter country code).
+    *   `hq` (string, optional): Appends the specified query terms to the query (logical AND operation).
+    *   `lr` (string, optional): Restricts the search to documents written in the specified language.
+    *   `orTerms` (string, optional): Provides additional search terms to find in documents.
+    *   `rights` (string, optional): Filters search results by license. Supported values: `cc_publicdomain`, `cc_attribute`, `cc_sharealike`, `cc_noncommercial`, `cc_nonderived` and combinations thereof.
+    *   `safe` (string, optional): Search safety level. Supported values: `"active"` (enables SafeSearch), `"off"` (disables SafeSearch, default).
+    *   `searchType` (string, optional): Specifies the search type. Supported value: `"image"` (Custom Image Search). If unspecified, results are restricted to webpages.
+    *   `siteSearch` (string, optional): Specifies a site to include or exclude from results.
+    *   `siteSearchFilter` (string, optional): Controls whether to include or exclude results from the site named in the `siteSearch` parameter. Supported values: `"e"` (exclude), `"i"` (include).
+    *   `sort` (string, optional): The sort expression to apply to the results (e.g., `sort=date`).
+    *   `imgColorType` (string, optional): Returns black and white, grayscale, transparent, or color images. Applicable only when `searchType` is `"image"`. Supported values: `"color"`, `"gray"`, `"mono"`, `"trans"`.
+    *   `imgDominantColor` (string, optional): Returns images of a specified dominant color. Applicable only when `searchType` is `"image"`. Supported values: `"black"`, `"blue"`, `"brown"`, `"gray"`, `"green"`, `"orange"`, `"pink"`, `"purple"`, `"red"`, `"teal"`, `"white"`, `"yellow"`.
+    *   `imgSize` (string, optional): Returns images of a specified size. Applicable only when `searchType` is `"image"`. Supported values: `"huge"`, `"icon"`, `"large"`, `"medium"`, `"small"`, `"xlarge"`, `"xxlarge"`.
+    *   `imgType` (string, optional): Returns images of a specified type. Applicable only when `searchType` is `"image"`. Supported values: `"clipart"`, `"face"`, `"lineart"`, `"stock"`, `"photo"`, `"animated"`.
+    *   `highRange` (string, optional): Specifies the ending value for a search range. Used in conjunction with `lowRange`.
+    *   `lowRange` (string, optional): Specifies the starting value for a search range. Used in conjunction with `highRange`.
+    *   `linkSite` (string, optional): Specifies a site that all search results should contain a link to.
 *   **Output:**
-    *   Success: A text string containing a formatted list of search results (title, link, snippet).
-    *   Failure: A text string describing the error.
+   *   Success: A text string containing a formatted list of search results (title, link, snippet, and potentially image thumbnail link for image searches), along with search information (total results, time) and next page information if available.
+   *   Failure: A text string describing the error.
 *   **Example Invocation (JSON):**
     ```json
     {
@@ -173,6 +197,27 @@ Once the server is running and connected to an MCP client like Roo Code, you can
       "arguments": {
         "query": "TypeScript best practices",
         "num": 5
+      }
+    }
+    ```
+    ```json
+    {
+      "tool_name": "search",
+      "arguments": {
+        "query": "cat pictures",
+        "searchType": "image",
+        "imgSize": "large",
+        "imgColorType": "color"
+      }
+    }
+    ```
+    ```json
+    {
+      "tool_name": "search",
+      "arguments": {
+        "query": "site:developer.mozilla.org javascript array methods",
+        "siteSearch": "developer.mozilla.org",
+        "siteSearchFilter": "i"
       }
     }
     ```
@@ -186,7 +231,7 @@ Once the server is running and connected to an MCP client like Roo Code, you can
     *   `selector` (string, optional): A CSS selector. If provided, returns the `outerHTML` of the first matching element. If omitted, returns the full page HTML.
     *   `waitForSelector` (string, optional): Waits for an element matching this CSS selector to appear on the page before scraping.
     *   `timeout` (integer, optional, default 60000): Maximum time in milliseconds to wait for page navigation or the selector.
-    *   `outputFormat` (string, optional, default "markdown"): The desired output format. Can be `"markdown"` or `"html"`.
+    *   `outputFormat` (string, optional, default "markdown"): The desired output format. Can be `"markdown"` or `"html"`。
 *   **Output:**
     *   Success: A text string containing the scraped content in the specified format.
     *   Failure: A text string describing the error (e.g., timeout, selector not found, invalid URL).
@@ -281,7 +326,6 @@ This project is intended to be licensed under the **MIT License**. Please refer 
 *   **API Key Security:** Never hardcode your `GOOGLE_API_KEY` or `GOOGLE_CX_ID` directly into the source code or commit them to version control. Always use environment variables (via Roo Code settings or `.env` file).
 *   **`map` Tool Recursion:** The `map` tool currently does not recursively parse Sitemap Index files. Implementing this would provide a more complete URL list.
 *   **Test Coverage:** The project lacks tests. Writing unit and integration tests for the tool handlers is crucial for ensuring reliability.
-*   **Error Handling:** Error handling can be further refined to provide more specific and user-friendly error messages.
 *   **API Key Fallback Logic:** While planned, the code currently relies on `dotenv` or system environment variables, and doesn't explicitly implement the logic to read API keys from the MCP client context as a primary source.
 *   **Pre-commit Hooks:** Consider integrating Husky and lint-staged to automatically run linters and formatters before `git commit`.
 *   **License File:** Populate the `LICENSE` file with the chosen (MIT) license text.
